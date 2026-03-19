@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EventHub — Notifications</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:          #0d0f14;
+      --card-bg:     #141720;
+      --card-border: rgba(255,255,255,0.07);
+      --accent:      #5b4eff;
+      --accent2:     #7c6dff;
+      --text:        #e8eaf0;
+      --text-muted:  rgba(232,234,240,0.42);
+      --text-mid:    rgba(232,234,240,0.62);
+      --nav-h:       64px;
+      --green:       #22c55e;
+      --red:         #ef4444;
+      --yellow:      #f59e0b;
+      --blue:        #3b82f6;
+      --purple:      #a855f7;
+    }
+
+    html, body {
+      min-height: 100%; font-family: 'DM Sans', sans-serif;
+      background: var(--bg); color: var(--text);
+    }
+
+    /* ── NAV ──────────────────────────────────────────── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      height: var(--nav-h);
+      background: rgba(13,15,20,0.88);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      backdrop-filter: blur(20px);
+      display: flex; align-items: center; padding: 0 32px; gap: 28px;
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 10px;
+      font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.05rem;
+      color: var(--text); text-decoration: none; flex-shrink: 0;
+    }
+    .nav-logo-icon {
+      width: 34px; height: 34px; border-radius: 9px;
+      background: linear-gradient(135deg, #7c6dff, #4b3fcc);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 16px rgba(91,78,255,.4);
+    }
+    .nav-logo-icon svg { width: 18px; height: 18px; }
+    .nav-links { display: flex; gap: 4px; }
+    .nav-link {
+      padding: 6px 14px; border-radius: 8px; background: none; border: none;
+      color: var(--text-muted); font-family: 'DM Sans', sans-serif; font-size: .9rem;
+      font-weight: 500; cursor: pointer; transition: color .2s;
+    }
+    .nav-link:hover { color: var(--text); }
+    .nav-spacer { flex: 1; }
+    .nav-search { position: relative; display: flex; align-items: center; }
+    .nav-search svg {
+      position: absolute; left: 11px; width: 15px; height: 15px;
+      stroke: var(--text-muted); fill: none; stroke-width: 2; pointer-events: none;
+    }
+    .nav-search input {
+      padding: 8px 14px 8px 34px; width: 210px;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 10px; color: var(--text); font-family: 'DM Sans', sans-serif;
+      font-size: .85rem; outline: none; transition: border-color .2s, width .3s;
+    }
+    .nav-search input::placeholder { color: var(--text-muted); }
+    .nav-search input:focus { border-color: rgba(91,78,255,.5); width: 250px; }
+    .nav-bell {
+      position: relative; width: 36px; height: 36px; border-radius: 9px;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: background .2s;
+    }
+    .nav-bell:hover { background: rgba(255,255,255,.1); }
+    .nav-bell svg { width: 16px; height: 16px; stroke: var(--text-mid); fill: none; stroke-width: 1.8; }
+    .nav-bell-dot {
+      position: absolute; top: 7px; right: 7px; width: 7px; height: 7px;
+      background: var(--red); border-radius: 50%; border: 1.5px solid var(--bg);
+      animation: bellPulse 2s ease-in-out infinite;
+    }
+    @keyframes bellPulse {
+      0%,100% { transform: scale(1); opacity: 1; }
+      50%      { transform: scale(1.3); opacity: .7; }
+    }
+    .nav-user {
+      display: flex; align-items: center; gap: 8px; padding: 5px 10px;
+      border-radius: 10px; cursor: pointer;
+      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.05); transition: background .2s;
+    }
+    .nav-user:hover { background: rgba(255,255,255,.09); }
+    .nav-avatar {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: linear-gradient(135deg, #9c88ff, #5b4eff);
+      display: flex; align-items: center; justify-content: center;
+      font-size: .7rem; font-weight: 700; color: #fff;
+    }
+    .nav-username { font-size: .85rem; font-weight: 500; }
+    .nav-user svg { width: 14px; height: 14px; stroke: var(--text-muted); fill: none; stroke-width: 2; }
+
+    /* ── MAIN ─────────────────────────────────────────── */
+    main { padding-top: var(--nav-h); min-height: 100vh; }
+    .container {
+      max-width: 680px; margin: 0 auto;
+      padding: 40px 24px 80px;
+      animation: fadeUp .38s cubic-bezier(.22,.68,0,1.1) both;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    /* ── PAGE HEADER ──────────────────────────────────── */
+    .page-top {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      margin-bottom: 24px; gap: 12px;
+    }
+    .page-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.8rem; letter-spacing: -.4px; }
+    .unread-sub  { font-size: .82rem; color: var(--text-muted); margin-top: 4px; }
+    .unread-sub span { color: var(--accent2); font-weight: 600; }
+
+    .mark-all-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 14px; border-radius: 9px; border: none; background: transparent;
+      color: var(--accent2); font-family: 'DM Sans', sans-serif;
+      font-size: .82rem; font-weight: 600; cursor: pointer; white-space: nowrap;
+      transition: all .2s; flex-shrink: 0; margin-top: 4px;
+    }
+    .mark-all-btn:hover { background: rgba(91,78,255,.1); }
+    .mark-all-btn svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2.2; }
+
+    /* ── FILTER TABS ──────────────────────────────────── */
+    .filter-tabs {
+      display: flex; gap: 6px; margin-bottom: 18px; flex-wrap: wrap;
+    }
+    .tab-btn {
+      padding: 6px 14px; border-radius: 20px; font-size: .8rem; font-weight: 500;
+      border: 1px solid rgba(255,255,255,.09); background: transparent;
+      color: var(--text-muted); cursor: pointer; transition: all .2s;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .tab-btn:hover { color: var(--text); border-color: rgba(255,255,255,.18); }
+    .tab-btn.active {
+      background: var(--accent); border-color: var(--accent);
+      color: #fff; box-shadow: 0 4px 14px rgba(91,78,255,.3);
+    }
+
+    /* ── NOTIFICATION LIST ────────────────────────────── */
+    .notif-list { display: flex; flex-direction: column; gap: 10px; }
+
+    /* ── NOTIF CARD ───────────────────────────────────── */
+    .notif-card {
+      background: var(--card-bg); border: 1px solid var(--card-border);
+      border-radius: 14px; padding: 16px 18px;
+      display: flex; align-items: flex-start; gap: 14px;
+      cursor: pointer; position: relative; overflow: hidden;
+      transition: border-color .2s, background .2s, transform .18s, box-shadow .18s;
+      animation: notifIn .35s ease both;
+    }
+    .notif-card:hover {
+      border-color: rgba(91,78,255,.2);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 24px rgba(0,0,0,.3);
+    }
+    .notif-card.unread {
+      background: rgba(91,78,255,.05);
+      border-color: rgba(91,78,255,.14);
+    }
+    .notif-card.unread::before {
+      content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+      width: 3px; border-radius: 0 2px 2px 0;
+      background: linear-gradient(to bottom, var(--accent), var(--accent2));
+    }
+    @keyframes notifIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    /* stagger */
+    .notif-card:nth-child(1){ animation-delay:.04s; }
+    .notif-card:nth-child(2){ animation-delay:.09s; }
+    .notif-card:nth-child(3){ animation-delay:.14s; }
+    .notif-card:nth-child(4){ animation-delay:.19s; }
+    .notif-card:nth-child(5){ animation-delay:.24s; }
+
+    /* ── NOTIF ICON ───────────────────────────────────── */
+    .notif-icon {
+      width: 40px; height: 40px; border-radius: 11px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .notif-icon svg { width: 18px; height: 18px; stroke: #fff; fill: none; stroke-width: 1.8; }
+    .icon-green  { background: linear-gradient(135deg,#22c55e,#16a34a); box-shadow: 0 4px 12px rgba(34,197,94,.3); }
+    .icon-blue   { background: linear-gradient(135deg,#3b82f6,#1d4ed8); box-shadow: 0 4px 12px rgba(59,130,246,.3); }
+    .icon-yellow { background: linear-gradient(135deg,#f59e0b,#d97706); box-shadow: 0 4px 12px rgba(245,158,11,.3); }
+    .icon-purple { background: linear-gradient(135deg,#a855f7,#7e22ce); box-shadow: 0 4px 12px rgba(168,85,247,.3); }
+    .icon-accent { background: linear-gradient(135deg,#5b4eff,#4b3fcc); box-shadow: 0 4px 12px rgba(91,78,255,.3); }
+
+    /* ── NOTIF BODY ───────────────────────────────────── */
+    .notif-body { flex: 1; min-width: 0; }
+    .notif-top  { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+    .notif-title {
+      font-family: 'Syne', sans-serif; font-weight: 700; font-size: .92rem;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .notif-unread-dot {
+      width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+      background: var(--accent2);
+    }
+    .notif-msg {
+      font-size: .8rem; color: var(--text-mid); line-height: 1.5;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+      margin-bottom: 6px;
+    }
+    .notif-time { font-size: .72rem; color: var(--text-muted); }
+
+    /* ── NOTIF ACTIONS ────────────────────────────────── */
+    .notif-actions { display: flex; gap: 6px; flex-shrink: 0; align-items: flex-start; padding-top: 1px; }
+    .notif-action-btn {
+      width: 28px; height: 28px; border-radius: 7px;
+      background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.08);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all .18s;
+    }
+    .notif-action-btn:hover { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.15); }
+    .notif-action-btn.dismiss:hover { background: rgba(239,68,68,.12); border-color: rgba(239,68,68,.25); }
+    .notif-action-btn svg { width: 12px; height: 12px; stroke: var(--text-muted); fill: none; stroke-width: 2; }
+    .notif-action-btn.dismiss svg { stroke: var(--red); }
+
+    /* ── EMPTY STATE ──────────────────────────────────── */
+    .empty-notif {
+      display: none; flex-direction: column; align-items: center;
+      padding: 60px 20px; gap: 12px; color: var(--text-muted);
+    }
+    .empty-notif.show { display: flex; }
+    .empty-notif-icon {
+      width: 56px; height: 56px; border-radius: 16px;
+      background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.08);
+      display: flex; align-items: center; justify-content: center; margin-bottom: 4px;
+    }
+    .empty-notif-icon svg { width: 24px; height: 24px; stroke: var(--text-muted); fill: none; stroke-width: 1.4; opacity: .5; }
+    .empty-notif h3 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; color: var(--text-mid); }
+    .empty-notif p  { font-size: .82rem; text-align: center; }
+
+    /* ── TOAST ────────────────────────────────────────── */
+    .toast {
+      position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(20px);
+      background: rgba(24,28,38,.97); border: 1px solid rgba(255,255,255,.1);
+      border-radius: 12px; padding: 11px 20px; font-size: .85rem; color: var(--text);
+      backdrop-filter: blur(16px); opacity: 0;
+      transition: opacity .3s, transform .3s; pointer-events: none; white-space: nowrap;
+      box-shadow: 0 8px 32px rgba(0,0,0,.5); z-index: 999;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="#">
+    <div class="nav-logo-icon">
+      <svg viewBox="0 0 24 24" fill="none">
+        <rect x="3" y="4" width="18" height="18" rx="3" fill="white" fill-opacity=".2"/>
+        <rect x="3" y="4" width="18" height="18" rx="3" stroke="white" stroke-width="1.6"/>
+        <path d="M3 9h18M8 2v4M16 2v4" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+        <path d="M7 14h4M7 17h7" stroke="white" stroke-width="1.6" stroke-linecap="round"/>
+      </svg>
+    </div>
+    EventHub
+  </a>
+  <div class="nav-links">
+    <button class="nav-link">Events</button>
+    <button class="nav-link">My Registrations</button>
+  </div>
+  <div class="nav-spacer"></div>
+  <div class="nav-search">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35" stroke-linecap="round"/></svg>
+    <input type="text" placeholder="Search events..."/>
+  </div>
+  <div class="nav-bell" onclick="window.location.reload()">
+    <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <div class="nav-bell-dot" id="navBellDot"></div>
+  </div>
+  <div class="nav-user">
+    <div class="nav-avatar">AM</div>
+    <span class="nav-username">Alex M.</span>
+    <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </div>
+</nav>
+
+<main>
+  <div class="container">
+
+    <!-- Header -->
+    <div class="page-top">
+      <div>
+        <h1 class="page-title">Notifications</h1>
+        <p class="unread-sub"><span id="unreadCount">3</span> unread notifications</p>
+      </div>
+      <button class="mark-all-btn" onclick="markAllRead()">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        Mark all as read
+      </button>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="filter-tabs">
+      <button class="tab-btn active" onclick="filterNotifs('all', this)">All</button>
+      <button class="tab-btn" onclick="filterNotifs('unread', this)">Unread</button>
+      <button class="tab-btn" onclick="filterNotifs('registration', this)">Registrations</button>
+      <button class="tab-btn" onclick="filterNotifs('reminder', this)">Reminders</button>
+      <button class="tab-btn" onclick="filterNotifs('update', this)">Updates</button>
+    </div>
+
+    <!-- Notification List -->
+    <div class="notif-list" id="notifList"></div>
+
+    <!-- Empty State -->
+    <div class="empty-notif" id="emptyNotif">
+      <div class="empty-notif-icon">
+        <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <h3>You're all caught up!</h3>
+      <p>No notifications to show here.</p>
+    </div>
+
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  /* ── Notification Data ─────────────────────────────── */
+  const notifications = [
+    {
+      id: 1,
+      type: 'registration',
+      icon: 'check',
+      iconClass: 'icon-green',
+      title: 'Registration Confirmed!',
+      msg: 'You are now registered for Global Tech Conference 2026.',
+      time: '6 min ago',
+      unread: true,
+    },
+    {
+      id: 2,
+      type: 'reminder',
+      icon: 'bell',
+      iconClass: 'icon-blue',
+      title: 'Event Reminder',
+      msg: 'Design Leadership Summit starts in 3 days. Don\'t forget to prepare!',
+      time: '1 hr ago',
+      unread: true,
+    },
+    {
+      id: 3,
+      type: 'reminder',
+      icon: 'clock',
+      iconClass: 'icon-yellow',
+      title: 'Deadline Alert',
+      msg: 'Registration for Future of AI Workshop closes in 24 hours.',
+      time: '3 hr ago',
+      unread: true,
+    },
+    {
+      id: 4,
+      type: 'update',
+      icon: 'info',
+      iconClass: 'icon-purple',
+      title: 'Event Updated',
+      msg: 'The venue for Indie Music Festival has been updated. Check the new location.',
+      time: '2 days ago',
+      unread: false,
+    },
+    {
+      id: 5,
+      type: 'update',
+      icon: 'map',
+      iconClass: 'icon-accent',
+      title: 'New Event Near You',
+      msg: 'A new Tech Workshop has been published in San Francisco!',
+      time: '3 days ago',
+      unread: false,
+    },
+  ];
+
+  /* ── SVG icons ─────────────────────────────────────── */
+  const icons = {
+    check: `<polyline points="20 6 9 17 4 12"/>`,
+    bell:  `<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0" stroke-linecap="round" stroke-linejoin="round"/>`,
+    clock: `<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3" stroke-linecap="round"/>`,
+    info:  `<circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>`,
+    map:   `<path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/>`,
+  };
+
+  let currentFilter = 'all';
+  let notifData = notifications.map(n => ({ ...n }));
+
+  /* ── Render ────────────────────────────────────────── */
+  function render() {
+    const list = document.getElementById('notifList');
+    const empty = document.getElementById('emptyNotif');
+
+    const filtered = notifData.filter(n => {
+      if (currentFilter === 'all') return true;
+      if (currentFilter === 'unread') return n.unread;
+      return n.type === currentFilter;
+    });
+
+    list.innerHTML = '';
+
+    if (filtered.length === 0) {
+      empty.classList.add('show');
+      return;
+    }
+    empty.classList.remove('show');
+
+    filtered.forEach(n => {
+      const card = document.createElement('div');
+      card.className = `notif-card${n.unread ? ' unread' : ''}`;
+      card.dataset.id = n.id;
+      card.innerHTML = `
+        <div class="notif-icon ${n.iconClass}">
+          <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            ${icons[n.icon]}
+          </svg>
+        </div>
+        <div class="notif-body">
+          <div class="notif-top">
+            <div class="notif-title">${n.title}</div>
+            ${n.unread ? '<div class="notif-unread-dot"></div>' : ''}
+          </div>
+          <div class="notif-msg">${n.msg}</div>
+          <div class="notif-time">${n.time}</div>
+        </div>
+        <div class="notif-actions">
+          ${n.unread ? `
+          <button class="notif-action-btn" title="Mark as read" onclick="markRead(event, ${n.id})">
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          </button>` : ''}
+          <button class="notif-action-btn dismiss" title="Dismiss" onclick="dismiss(event, ${n.id})">
+            <svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+      `;
+      // clicking card marks as read
+      card.addEventListener('click', () => markRead(null, n.id));
+      list.appendChild(card);
+    });
+
+    updateUnreadBadge();
+  }
+
+  /* ── Filter ────────────────────────────────────────── */
+  function filterNotifs(type, btn) {
+    currentFilter = type;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    render();
+  }
+
+  /* ── Mark single read ──────────────────────────────── */
+  function markRead(e, id) {
+    if (e) e.stopPropagation();
+    const n = notifData.find(x => x.id === id);
+    if (n && n.unread) {
+      n.unread = false;
+      render();
+    }
+  }
+
+  /* ── Mark all read ─────────────────────────────────── */
+  function markAllRead() {
+    notifData.forEach(n => n.unread = false);
+    render();
+    showToast('✓  All notifications marked as read');
+  }
+
+  /* ── Dismiss ───────────────────────────────────────── */
+  function dismiss(e, id) {
+    e.stopPropagation();
+    const card = document.querySelector(`.notif-card[data-id="${id}"]`);
+    if (card) {
+      card.style.transition = 'opacity .25s, transform .25s, max-height .3s, padding .3s, margin .3s';
+      card.style.opacity = '0';
+      card.style.transform = 'translateX(16px)';
+      card.style.maxHeight = card.offsetHeight + 'px';
+      setTimeout(() => {
+        card.style.maxHeight = '0';
+        card.style.padding = '0';
+        card.style.marginBottom = '0';
+        card.style.border = 'none';
+      }, 220);
+      setTimeout(() => {
+        notifData = notifData.filter(x => x.id !== id);
+        render();
+      }, 520);
+    }
+    showToast('🗑️  Notification dismissed');
+  }
+
+  /* ── Update unread badge ───────────────────────────── */
+  function updateUnreadBadge() {
+    const count = notifData.filter(n => n.unread).length;
+    const countEl = document.getElementById('unreadCount');
+    const dot = document.getElementById('navBellDot');
+    countEl.textContent = count;
+    dot.style.display = count > 0 ? '' : 'none';
+  }
+
+  /* ── Toast ─────────────────────────────────────────── */
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3500);
+  }
+
+  /* ── Init ──────────────────────────────────────────── */
+  render();
+</script>
+</body>
+</html>
