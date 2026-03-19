@@ -20,7 +20,7 @@ A full-stack web application that allows organizers to create and manage events,
 ### Frontend
 
 * HTML, CSS, JavaScript
-* (Optional: React / Tailwind if used)
+
 
 ### Backend
 
@@ -117,6 +117,3 @@ cd frontend
 
 ---
 
-## 📄 License
-
-This project is for educational and hackathon purposes.
