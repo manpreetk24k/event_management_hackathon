@@ -1,36 +1,142 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# EventHub — Event Management Dashboard
 
-## Getting Started
+A full-stack event management platform built with **Next.js 16**, **TypeScript**, and **TailwindCSS**. The platform supports two user roles — **Attendees** and **Organizers** — with separate dashboards, real-time registration tracking, and a polished UI.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 📸 Screenshots
+
+> Login → Event Listing → Event Detail → Organizer Dashboard
+
+---
+
+## 🚀 Features
+
+### Attendee
+- Browse and search events with category filters
+- View full event details with real-time seat availability
+- Register for events and receive a confirmation summary
+- Manage all personal registrations (view / cancel)
+- Edit profile (name, email, avatar, password)  
+- Notification panel for reminders and event updates
+
+### Organizer
+- Dashboard with stats: total events, registrations, upcoming events, conversion rate
+- Create events with cover image, rich description, date/time, location, category, and max seat count
+- Manage events (edit, delete, publish, save as draft)
+- View a searchable attendee list for each event with CSV export
+
+### Shared
+- Role-aware Navbar with notification bell badge and profile dropdown
+- Responsive design — works on mobile, tablet, and desktop
+- Smooth micro-animations throughout the UI
+- Custom 404 error page
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | [Next.js 16](https://nextjs.org/) (App Router) |
+| Language | TypeScript |
+| Styling | Tailwind CSS v4 |
+| Animations | Framer Motion |
+| Icons | Lucide React |
+
+---
+
+## 📁 Project Structure
+
+```
+src/
+├── app/
+│   ├── page.tsx                        # Login
+│   ├── register/page.tsx               # Register
+│   ├── forgot-password/page.tsx        # Forgot Password
+│   ├── not-found.tsx                   # 404 page
+│   └── (dashboard)/
+│       ├── layout.tsx                  # Shared Navbar layout
+│       ├── events/page.tsx             # Event Listing
+│       ├── events/[id]/page.tsx        # Event Detail
+│       ├── registration-confirmation/  # Registration Confirmation
+│       ├── registrations/              # My Registrations
+│       ├── profile/                    # User Profile
+│       ├── notifications/              # Notifications Panel
+│       └── organizer/
+│           ├── page.tsx                # Organizer Dashboard
+│           ├── events/page.tsx         # My Events
+│           ├── events/create/          # Create Event
+│           └── registrations/          # Event Registrations View
+└── components/
+    └── Navbar.tsx                      # Global navigation bar
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## ⚙️ Getting Started
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Prerequisites
+- Node.js `>= 18`
+- npm or yarn
 
-## Learn More
+### Installation
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+# Clone the repository
+git clone https://github.com/your-username/event-dashboard.git
+cd event-dashboard
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Install dependencies
+npm install
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# Start the development server
+npm run dev
+```
 
-## Deploy on Vercel
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🗺️ Available Routes
+
+| Route | Description |
+|---|---|
+| `/` | Login page |
+| `/register` | Sign up page |
+| `/forgot-password` | Password reset |
+| `/events` | Event listing (home) |
+| `/events/:id` | Event detail & registration |
+| `/registration-confirmation` | Post-registration confirmation |
+| `/registrations` | My registered events |
+| `/profile` | User profile settings |
+| `/notifications` | Notification panel |
+| `/organizer` | Organizer stats dashboard |
+| `/organizer/events` | Manage events |
+| `/organizer/events/create` | Create new event |
+| `/organizer/registrations` | View attendees for an event |
+
+---
+
+## 🔮 Upcoming Features (Planned)
+
+- [ ] JWT-based authentication (login / register wired to backend)
+- [ ] PostgreSQL / MongoDB database integration
+- [ ] Real-time registration count using WebSockets
+- [ ] Email notifications via Nodemailer or SendGrid
+- [ ] Deployed on Vercel
+
+---
+
+## 📦 Build for Production
+
+```bash
+npm run build
+npm start
+```
+
+---
+
+## 📄 License
+
+MIT License — feel free to use this project for learning or as a starting point for your own event platform.
