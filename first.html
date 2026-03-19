@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EventHub — Sign In</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-dark:      #0d0818;
+      --bg-card:      rgba(255,255,255,0.06);
+      --border:       rgba(255,255,255,0.10);
+      --input-bg:     rgba(255,255,255,0.07);
+      --input-border: rgba(255,255,255,0.13);
+      --accent:       #5b4eff;
+      --accent-glow:  #7c6dff;
+      --text-primary: #f0eeff;
+      --text-muted:   rgba(240,238,255,0.50);
+      --text-label:   rgba(240,238,255,0.60);
+      --toggle-active:#1e1836;
+      --error:        #ff5e7d;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-primary);
+      overflow: hidden;
+    }
+
+    /*BACKGROUND */
+    .bg {
+      position: fixed; inset: 0; z-index: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 80%, rgba(91,78,255,0.35) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 80% 20%, rgba(120,80,255,0.25) 0%, transparent 55%),
+        radial-gradient(ellipse 100% 80% at 50% 100%, rgba(40,20,100,0.8) 0%, transparent 70%),
+        linear-gradient(160deg, #130c2e 0%, #0d0818 40%, #1a0830 100%);
+    }
+
+    /* crowd silhouette */
+    .bg::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0;
+      height: 38%;
+      background: linear-gradient(to top, rgba(10,5,30,0.95) 0%, transparent 100%);
+      mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%23000' d='M0,320 L0,180 Q30,140 60,160 Q90,180 110,140 Q130,100 160,120 Q190,140 220,100 Q250,60 280,80 Q310,100 340,70 Q370,40 400,65 Q430,90 460,60 Q490,30 520,55 Q550,80 580,50 Q610,20 640,45 Q670,70 700,40 Q730,10 760,35 Q790,60 820,30 Q850,0 880,25 Q910,50 940,20 Q970,-10 1000,15 Q1030,40 1060,15 Q1090,-10 1120,20 Q1150,50 1180,25 Q1210,0 1240,30 Q1270,60 1300,35 Q1330,10 1360,40 Q1400,70 1440,50 L1440,320 Z'/%3E%3C/svg%3E");
+      mask-size: cover;
+    }
+
+    /* spotlight beams */
+    .beam {
+      position: absolute;
+      bottom: 0;
+      width: 3px;
+      background: linear-gradient(to top, rgba(255,255,255,0.18), transparent);
+      transform-origin: bottom center;
+      filter: blur(6px);
+    }
+    .beam:nth-child(1){ left:22%; height:65%; transform:rotate(-18deg); animation: sway1 6s ease-in-out infinite; }
+    .beam:nth-child(2){ left:38%; height:72%; transform:rotate(-5deg);  animation: sway2 7s ease-in-out infinite; }
+    .beam:nth-child(3){ left:60%; height:68%; transform:rotate(8deg);   animation: sway1 8s ease-in-out infinite reverse; }
+    .beam:nth-child(4){ left:78%; height:60%; transform:rotate(20deg);  animation: sway2 5s ease-in-out infinite; }
+
+    @keyframes sway1 {
+      0%,100% { transform: rotate(-18deg) scaleX(1); opacity:.8; }
+      50%      { transform: rotate(-10deg) scaleX(1.4); opacity:.4; }
+    }
+    @keyframes sway2 {
+      0%,100% { transform: rotate(-5deg) scaleX(1); opacity:.7; }
+      50%      { transform: rotate(3deg)  scaleX(1.5); opacity:.3; }
+    }
+
+    /* floating particles */
+    .particles { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+    .particle {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(180,160,255,0.6);
+      animation: float linear infinite;
+    }
+    @keyframes float {
+      0%   { transform: translateY(0) scale(1); opacity: 0; }
+      10%  { opacity: 1; }
+      90%  { opacity: .6; }
+      100% { transform: translateY(-100vh) scale(.5); opacity: 0; }
+    }
+
+    /*LAYOUT  */
+    .page {
+      position: relative; z-index: 1;
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh; padding: 24px;
+    }
+
+    /*CARD */
+    .card {
+      width: 100%; max-width: 380px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 36px 32px 32px;
+      backdrop-filter: blur(28px) saturate(1.6);
+      -webkit-backdrop-filter: blur(28px) saturate(1.6);
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.04) inset,
+        0 32px 80px rgba(0,0,0,0.6),
+        0 0 120px rgba(91,78,255,0.12);
+      animation: slideUp .55s cubic-bezier(.22,.68,0,1.2) both;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(32px); opacity: 0; }
+      to   { transform: translateY(0);    opacity: 1; }
+    }
+
+    /* LOGO  */
+    .logo-wrap {
+      display: flex; justify-content: center; margin-bottom: 20px;
+    }
+    .logo-icon {
+      width: 52px; height: 52px; border-radius: 14px;
+      background: linear-gradient(135deg, #7c6dff 0%, #4b3fcc 100%);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 8px 32px rgba(91,78,255,0.55);
+      animation: pulse 3s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%,100% { box-shadow: 0 8px 32px rgba(91,78,255,0.55); }
+      50%      { box-shadow: 0 8px 48px rgba(91,78,255,0.85); }
+    }
+    .logo-icon svg { width: 26px; height: 26px; fill: #fff; }
+
+    /*HEADING  */
+    .card-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800; font-size: 1.65rem;
+      text-align: center; letter-spacing: -.5px;
+      color: var(--text-primary);
+    }
+    .card-sub {
+      text-align: center; font-size: .85rem;
+      color: var(--text-muted); margin-top: 6px; margin-bottom: 24px;
+      font-weight: 300;
+    }
+
+    /*TOGGLE */
+    .toggle {
+      display: flex; background: rgba(0,0,0,0.30);
+      border: 1px solid var(--border); border-radius: 12px;
+      padding: 4px; margin-bottom: 26px; position: relative;
+    }
+    .toggle-btn {
+      flex: 1; padding: 9px 0; border: none; background: transparent;
+      color: var(--text-muted); font-family: 'DM Sans', sans-serif;
+      font-size: .88rem; font-weight: 500; cursor: pointer;
+      border-radius: 9px; position: relative; z-index: 1;
+      transition: color .25s;
+    }
+    .toggle-btn.active { color: var(--text-primary); }
+    .toggle-slider {
+      position: absolute; top: 4px; bottom: 4px;
+      width: calc(50% - 4px);
+      background: linear-gradient(135deg, #3d2f9e, #2e2270);
+      border-radius: 9px;
+      box-shadow: 0 2px 12px rgba(91,78,255,0.3);
+      transition: transform .28s cubic-bezier(.4,0,.2,1);
+    }
+    .toggle-slider.right { transform: translateX(calc(100% + 0px)); }
+
+    /* ─── FORM FIELD ──────────────────────────────────────────── */
+    .field { margin-bottom: 18px; }
+    .field-label {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: .72rem; font-weight: 500; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--text-label);
+      margin-bottom: 8px;
+    }
+    .field-label a {
+      text-transform: none; letter-spacing: 0;
+      font-size: .82rem; font-weight: 500;
+      color: var(--accent-glow); text-decoration: none;
+      transition: opacity .2s;
+    }
+    .field-label a:hover { opacity: .75; }
+
+    .input-wrap {
+      position: relative; display: flex; align-items: center;
+    }
+    .input-icon {
+      position: absolute; left: 14px; color: var(--text-muted);
+      display: flex; pointer-events: none;
+    }
+    .input-icon svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+
+    input[type="email"],
+    input[type="password"],
+    input[type="text"] {
+      width: 100%; padding: 12px 14px 12px 40px;
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      border-radius: 10px;
+      color: var(--text-primary);
+      font-family: 'DM Sans', sans-serif; font-size: .9rem;
+      outline: none; transition: border-color .2s, box-shadow .2s, background .2s;
+    }
+    input::placeholder { color: var(--text-muted); }
+    input:focus {
+      border-color: rgba(91,78,255,0.6);
+      box-shadow: 0 0 0 3px rgba(91,78,255,0.15);
+      background: rgba(255,255,255,0.10);
+    }
+    input.error { border-color: var(--error); }
+
+    .toggle-pw {
+      position: absolute; right: 12px; background: none; border: none;
+      cursor: pointer; color: var(--text-muted); display: flex;
+      padding: 4px; transition: color .2s;
+    }
+    .toggle-pw:hover { color: var(--text-primary); }
+    .toggle-pw svg { width: 17px; height: 17px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+
+    .error-msg {
+      display: none; font-size: .75rem; color: var(--error);
+      margin-top: 5px; padding-left: 2px;
+    }
+    .error-msg.show { display: block; }
+
+    /* ─── SIGN IN BUTTON ──────────────────────────────────────── */
+    .btn-signin {
+      width: 100%; padding: 14px;
+      background: linear-gradient(135deg, #6558ff 0%, #4b3fcc 100%);
+      border: none; border-radius: 12px;
+      color: #fff; font-family: 'Syne', sans-serif;
+      font-weight: 700; font-size: 1rem; letter-spacing: .02em;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+      box-shadow: 0 8px 30px rgba(91,78,255,0.45);
+      transition: transform .18s, box-shadow .18s, filter .18s;
+      margin-top: 4px; position: relative; overflow: hidden;
+    }
+    .btn-signin::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+      opacity: 0; transition: opacity .2s;
+    }
+    .btn-signin:hover::before { opacity: 1; }
+    .btn-signin:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(91,78,255,0.6);
+      filter: brightness(1.08);
+    }
+    .btn-signin:active { transform: translateY(0); }
+    .btn-signin svg { width: 18px; height: 18px; stroke: #fff; fill: none; stroke-width: 2.2; }
+
+    /* loading spinner inside button */
+    .spinner {
+      display: none; width: 18px; height: 18px;
+      border: 2.5px solid rgba(255,255,255,0.3);
+      border-top-color: #fff; border-radius: 50%;
+      animation: spin .6s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .btn-signin.loading .btn-label,
+    .btn-signin.loading .btn-arrow { display: none; }
+    .btn-signin.loading .spinner { display: block; }
+
+    /* ─── FOOTER ──────────────────────────────────────────────── */
+    .card-footer {
+      text-align: center; margin-top: 22px;
+      font-size: .85rem; color: var(--text-muted);
+    }
+    .card-footer a {
+      color: var(--text-primary); font-weight: 600;
+      text-decoration: none; transition: color .2s;
+    }
+    .card-footer a:hover { color: var(--accent-glow); }
+
+    /* ─── TOAST ───────────────────────────────────────────────── */
+    .toast {
+      position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(20px);
+      background: rgba(30,24,70,0.95); border: 1px solid var(--border);
+      border-radius: 12px; padding: 12px 22px;
+      font-size: .88rem; color: var(--text-primary);
+      backdrop-filter: blur(16px); opacity: 0;
+      transition: opacity .3s, transform .3s;
+      pointer-events: none; white-space: nowrap;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+
+<!-- Background -->
+<div class="bg">
+  <div class="beam"></div>
+  <div class="beam"></div>
+  <div class="beam"></div>
+  <div class="beam"></div>
+  <div class="particles" id="particles"></div>
+</div>
+
+<!-- Card -->
+<div class="page">
+  <div class="card">
+
+    <!-- Logo -->
+    <div class="logo-wrap">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M3 9h18M8 2v4M16 2v4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" fill="none"/><path d="M7 14h4M7 17h7" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </div>
+    </div>
+
+    <h1 class="card-title">EventHub</h1>
+    <p class="card-sub">Sign in to access your dashboard</p>
+
+    <!-- Role Toggle -->
+    <div class="toggle" role="group" aria-label="Select role">
+      <div class="toggle-slider" id="slider"></div>
+      <button class="toggle-btn active" id="btn-attendee" onclick="switchRole('attendee')">Attendee</button>
+      <button class="toggle-btn"        id="btn-organizer" onclick="switchRole('organizer')">Organizer</button>
+    </div>
+
+    <!-- Form -->
+    <form id="loginForm" novalidate>
+
+      <!-- Email -->
+      <div class="field">
+        <div class="field-label"><span>Email Address</span></div>
+        <div class="input-wrap">
+          <span class="input-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="M2 7l10 7 10-7" stroke-linecap="round"/></svg>
+          </span>
+          <input type="email" id="email" placeholder="hello@example.com" autocomplete="email"/>
+        </div>
+        <div class="error-msg" id="email-err">Please enter a valid email address.</div>
+      </div>
+
+      <!-- Password -->
+      <div class="field">
+        <div class="field-label">
+          <span>Password</span>
+          <a href="#">Forgot?</a>
+        </div>
+        <div class="input-wrap">
+          <span class="input-icon">
+            <svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="11" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4" stroke-linecap="round"/></svg>
+          </span>
+          <input type="password" id="password" placeholder="••••••••" autocomplete="current-password"/>
+          <button type="button" class="toggle-pw" id="togglePw" aria-label="Show password">
+            <svg id="eye-icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+        <div class="error-msg" id="pw-err">Password must be at least 6 characters.</div>
+      </div>
+
+      <!-- Submit -->
+      <button type="submit" class="btn-signin" id="signInBtn">
+        <span class="btn-label">Sign In</span>
+        <svg class="btn-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div class="spinner"></div>
+      </button>
+    </form>
+
+    <p class="card-footer">Don't have an account? <a href="#">Sign up</a></p>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  /*Particles */
+  const container = document.getElementById('particles');
+  for (let i = 0; i < 28; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const s = Math.random() * 3 + 1;
+    p.style.cssText = `
+      width:${s}px; height:${s}px;
+      left:${Math.random()*100}%;
+      bottom:${Math.random()*30}%;
+      animation-duration:${Math.random()*8+6}s;
+      animation-delay:${Math.random()*8}s;
+      opacity:${Math.random()*.6+.2};
+    `;
+    container.appendChild(p);
+  }
+
+  /* Role Toggle  */
+  function switchRole(role) {
+    const slider = document.getElementById('slider');
+    document.getElementById('btn-attendee').classList.toggle('active', role === 'attendee');
+    document.getElementById('btn-organizer').classList.toggle('active', role === 'organizer');
+    slider.classList.toggle('right', role === 'organizer');
+  }
+
+  /*Password Visibility */
+  const pwInput  = document.getElementById('password');
+  const eyeBtn   = document.getElementById('togglePw');
+  const eyeIcon  = document.getElementById('eye-icon');
+  const eyeOpen  = `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
+  const eyeSlash = `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>`;
+  let pwVisible = false;
+  eyeBtn.addEventListener('click', () => {
+    pwVisible = !pwVisible;
+    pwInput.type = pwVisible ? 'text' : 'password';
+    eyeIcon.innerHTML = pwVisible ? eyeSlash : eyeOpen;
+  });
+
+  /* Validation */
+  function validateEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
+
+  /* Form Submit*/
+  document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('email');
+    const pw    = document.getElementById('password');
+    const emailErr = document.getElementById('email-err');
+    const pwErr    = document.getElementById('pw-err');
+    let valid = true;
+
+    // reset
+    [email, pw].forEach(el => el.classList.remove('error'));
+    [emailErr, pwErr].forEach(el => el.classList.remove('show'));
+
+    if (!validateEmail(email.value.trim())) {
+      email.classList.add('error'); emailErr.classList.add('show'); valid = false;
+    }
+    if (pw.value.length < 6) {
+      pw.classList.add('error'); pwErr.classList.add('show'); valid = false;
+    }
+    if (!valid) return;
+
+    // simulate loading
+    const btn = document.getElementById('signInBtn');
+    btn.classList.add('loading'); btn.disabled = true;
+    await new Promise(r => setTimeout(r, 1800));
+    btn.classList.remove('loading'); btn.disabled = false;
+
+    showToast('✓  Signed in successfully!');
+  });
+
+  /* Toast*/
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+</script>
+</body>
+</html>

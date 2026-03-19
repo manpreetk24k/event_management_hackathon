@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EventHub — 404 Not Found</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #0d0f14;
+      --accent:  #5b4eff;
+      --accent2: #7c6dff;
+      --text:    #e8eaf0;
+      --text-muted: rgba(232,234,240,0.45);
+    }
+
+    html, body {
+      height: 100%; font-family: 'DM Sans', sans-serif;
+      background: var(--bg); color: var(--text);
+      overflow: hidden;
+    }
+
+    /* ── BACKGROUND ───────────────────────────────────── */
+    .bg {
+      position: fixed; inset: 0; z-index: 0;
+      background:
+        radial-gradient(ellipse 70% 55% at 50% 60%, rgba(91,78,255,0.18) 0%, transparent 65%),
+        radial-gradient(ellipse 50% 40% at 30% 80%, rgba(120,80,255,0.12) 0%, transparent 55%),
+        linear-gradient(160deg, #0f0c1e 0%, #0d0f14 50%, #12101e 100%);
+    }
+
+    /* floating orbs */
+    .orb {
+      position: absolute; border-radius: 50%;
+      filter: blur(60px); pointer-events: none; opacity: .18;
+    }
+    .orb1 {
+      width: 340px; height: 340px;
+      background: radial-gradient(circle, #5b4eff, transparent);
+      top: 20%; left: 50%; transform: translateX(-50%);
+      animation: orbFloat 7s ease-in-out infinite;
+    }
+    .orb2 {
+      width: 220px; height: 220px;
+      background: radial-gradient(circle, #ec4899, transparent);
+      bottom: 15%; right: 15%;
+      animation: orbFloat 9s ease-in-out infinite reverse;
+    }
+    .orb3 {
+      width: 180px; height: 180px;
+      background: radial-gradient(circle, #22c55e, transparent);
+      top: 15%; left: 10%;
+      animation: orbFloat 11s ease-in-out infinite;
+    }
+    @keyframes orbFloat {
+      0%,100% { transform: translateY(0) scale(1); }
+      50%      { transform: translateY(-24px) scale(1.08); }
+    }
+
+    /* grid lines */
+    .grid-bg {
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
+    }
+
+    /* ── PAGE ─────────────────────────────────────────── */
+    .page {
+      position: relative; z-index: 1;
+      height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 24px; text-align: center;
+    }
+
+    /* ── LOGO ICON ────────────────────────────────────── */
+    .logo-icon {
+      width: 56px; height: 56px; border-radius: 15px;
+      background: linear-gradient(135deg, #7c6dff, #4b3fcc);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 8px 32px rgba(91,78,255,.55);
+      margin-bottom: 28px;
+      animation: logoBounce .7s cubic-bezier(.22,.68,0,1.4) both;
+    }
+    .logo-icon svg { width: 28px; height: 28px; }
+    @keyframes logoBounce {
+      from { transform: scale(0) rotate(-15deg); opacity: 0; }
+      to   { transform: scale(1) rotate(0deg);   opacity: 1; }
+    }
+
+    /* ── 404 NUMBER ───────────────────────────────────── */
+    .error-num {
+      font-family: 'Syne', sans-serif; font-weight: 900;
+      font-size: clamp(7rem, 20vw, 10rem);
+      letter-spacing: -.06em; line-height: 1;
+      background: linear-gradient(135deg, #7c6dff 0%, #5b4eff 40%, #a78bff 70%, #ec4899 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: numIn .6s .15s cubic-bezier(.22,.68,0,1.1) both;
+      position: relative;
+    }
+    /* glitch flicker */
+    .error-num::before, .error-num::after {
+      content: '404';
+      position: absolute; left: 0; top: 0; width: 100%;
+      background: linear-gradient(135deg, #7c6dff, #5b4eff, #a78bff, #ec4899);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      opacity: 0;
+    }
+    .error-num::before {
+      animation: glitch1 5s 2s infinite;
+      clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);
+      transform: translateX(-3px);
+    }
+    .error-num::after {
+      animation: glitch2 5s 2s infinite;
+      clip-path: polygon(0 55%, 100% 55%, 100% 100%, 0 100%);
+      transform: translateX(3px);
+    }
+    @keyframes glitch1 {
+      0%,94%,100% { opacity: 0; }
+      95%          { opacity: .7; transform: translateX(-3px); }
+      97%          { opacity: .5; transform: translateX(3px); }
+    }
+    @keyframes glitch2 {
+      0%,94%,100% { opacity: 0; }
+      96%          { opacity: .7; transform: translateX(3px); }
+      98%          { opacity: .4; transform: translateX(-3px); }
+    }
+    @keyframes numIn {
+      from { opacity: 0; transform: translateY(20px) scale(.9); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    /* ── TEXT ─────────────────────────────────────────── */
+    .error-title {
+      font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.45rem;
+      margin-bottom: 10px; letter-spacing: -.3px;
+      animation: textIn .5s .3s ease both;
+    }
+    .error-sub {
+      font-size: .88rem; color: var(--text-muted); line-height: 1.65;
+      max-width: 340px; margin: 0 auto 32px;
+      animation: textIn .5s .4s ease both;
+    }
+    @keyframes textIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    /* ── BUTTON ───────────────────────────────────────── */
+    .btn-home {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 13px 26px; border-radius: 12px;
+      background: linear-gradient(135deg, #6558ff, #4b3fcc);
+      border: none; color: #fff;
+      font-family: 'Syne', sans-serif; font-weight: 700; font-size: .95rem;
+      cursor: pointer; text-decoration: none;
+      box-shadow: 0 8px 28px rgba(91,78,255,.45);
+      transition: transform .18s, box-shadow .18s, filter .18s;
+      position: relative; overflow: hidden;
+      animation: btnIn .5s .5s cubic-bezier(.22,.68,0,1.2) both;
+    }
+    .btn-home::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,.18), transparent);
+      opacity: 0; transition: opacity .2s;
+    }
+    .btn-home:hover::before { opacity: 1; }
+    .btn-home:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 14px 40px rgba(91,78,255,.6);
+      filter: brightness(1.1);
+    }
+    .btn-home:active { transform: translateY(0); }
+    .btn-home svg { width: 17px; height: 17px; stroke: #fff; fill: none; stroke-width: 2.2; }
+    @keyframes btnIn {
+      from { opacity: 0; transform: translateY(12px) scale(.96); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    /* ── QUICK LINKS ──────────────────────────────────── */
+    .quick-links {
+      display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; justify-content: center;
+      animation: textIn .5s .6s ease both;
+    }
+    .quick-link {
+      padding: 7px 14px; border-radius: 20px; font-size: .78rem; font-weight: 500;
+      border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.05);
+      color: var(--text-muted); cursor: pointer; text-decoration: none;
+      transition: all .2s; font-family: 'DM Sans', sans-serif;
+    }
+    .quick-link:hover { color: var(--text); border-color: rgba(91,78,255,.35); background: rgba(91,78,255,.1); }
+
+    /* ── PARTICLES ────────────────────────────────────── */
+    .particles { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+    .particle {
+      position: absolute; border-radius: 50%;
+      background: rgba(124,109,255,0.5);
+      animation: pfloat linear infinite;
+    }
+    @keyframes pfloat {
+      0%   { opacity: 0; transform: translateY(0) scale(1); }
+      10%  { opacity: .7; }
+      90%  { opacity: .3; }
+      100% { opacity: 0; transform: translateY(-100vh) scale(.4); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg">
+  <div class="grid-bg"></div>
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+  <div class="particles" id="particles"></div>
+</div>
+
+<div class="page">
+
+  <!-- Logo -->
+  <div class="logo-icon">
+    <svg viewBox="0 0 24 24" fill="none">
+      <rect x="3" y="4" width="18" height="18" rx="3" fill="white" fill-opacity=".2"/>
+      <rect x="3" y="4" width="18" height="18" rx="3" stroke="white" stroke-width="1.6"/>
+      <path d="M3 9h18M8 2v4M16 2v4" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+      <path d="M7 14h4M7 17h7" stroke="white" stroke-width="1.6" stroke-linecap="round"/>
+    </svg>
+  </div>
+
+  <!-- 404 -->
+  <div class="error-num">404</div>
+
+  <!-- Text -->
+  <h1 class="error-title">Page Not Found</h1>
+  <p class="error-sub">Oops! The page you're looking for doesn't exist or has been moved.<br/>Let's get you back on track.</p>
+
+  <!-- CTA -->
+  <a class="btn-home" href="#">
+    <svg viewBox="0 0 24 24"><path d="M3 12L12 3l9 9"/><path d="M9 21V12h6v9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Go Back Home
+  </a>
+
+  <!-- Quick Links -->
+  <div class="quick-links">
+    <a class="quick-link" href="#">Browse Events</a>
+    <a class="quick-link" href="#">My Registrations</a>
+    <a class="quick-link" href="#">My Profile</a>
+  </div>
+
+</div>
+
+<script>
+  /* particles */
+  const pc = document.getElementById('particles');
+  for (let i = 0; i < 22; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const s = Math.random() * 3 + 1;
+    p.style.cssText = `
+      width:${s}px; height:${s}px;
+      left:${Math.random()*100}%;
+      bottom:${Math.random()*20}%;
+      animation-duration:${Math.random()*10+7}s;
+      animation-delay:${Math.random()*8}s;
+      opacity:${Math.random()*.5+.2};
+    `;
+    pc.appendChild(p);
+  }
+</script>
+</body>
+</html>
