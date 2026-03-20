@@ -4,15 +4,20 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Lock, Eye, EyeOff, CalendarRange, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [role, setRole] = useState<'organizer' | 'attendee'>('attendee');
+  const router = useRouter();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate login for now
-    console.log(`Logging in as ${role}...`);
+    if (role === 'organizer') {
+      router.push('/organizer');
+    } else {
+      router.push('/events');
+    }
   };
 
   return (
